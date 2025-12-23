@@ -10,12 +10,21 @@ export interface TableNodeData {
 }
 
 const glowGradients = {
-  cyan: 'from-glow-cyan/20 to-transparent',
-  purple: 'from-glow-purple/20 to-transparent',
-  orange: 'from-glow-orange/20 to-transparent',
-  green: 'from-glow-green/20 to-transparent',
-  pink: 'from-glow-pink/20 to-transparent',
-  blue: 'from-glow-blue/20 to-transparent',
+  cyan: 'from-glow-cyan/15 to-transparent',
+  purple: 'from-glow-purple/15 to-transparent',
+  orange: 'from-glow-orange/15 to-transparent',
+  green: 'from-glow-green/15 to-transparent',
+  pink: 'from-glow-pink/15 to-transparent',
+  blue: 'from-glow-blue/15 to-transparent',
+};
+
+const borderColors = {
+  cyan: 'border-glow-cyan/30',
+  purple: 'border-glow-purple/30',
+  orange: 'border-glow-orange/30',
+  green: 'border-glow-green/30',
+  pink: 'border-glow-pink/30',
+  blue: 'border-glow-blue/30',
 };
 
 const dotColors = {
@@ -31,10 +40,10 @@ function TableNode({ data }: NodeProps<TableNodeData>) {
   const { tableName, columns, glowColor } = data;
 
   return (
-    <div className="table-node min-w-[220px] bg-card/95 backdrop-blur-sm border border-border/50 rounded-lg shadow-table relative overflow-hidden">
+    <div className={`table-node min-w-[220px] bg-card/95 backdrop-blur-sm border ${borderColors[glowColor]} rounded-lg shadow-table relative overflow-hidden`}>
       {/* Corner glow effects */}
-      <div className={`absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr ${glowGradients[glowColor]} pointer-events-none`} />
-      <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl ${glowGradients[glowColor]} pointer-events-none`} />
+      <div className={`absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr ${glowGradients[glowColor]} blur-sm pointer-events-none`} />
+      <div className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl ${glowGradients[glowColor]} blur-sm pointer-events-none`} />
       
       {/* Table Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-secondary/30 relative z-10">

@@ -24,6 +24,9 @@ const glowColors: Array<TableNodeData['glowColor']> = ['cyan', 'purple', 'orange
 
 interface DiagramCanvasProps {
   parsedDBML: ParsedDBML;
+  dbmlCode: string;
+  onImport: (code: string) => void;
+  onSave: () => void;
 }
 
 // Calculate dynamic handles based on relative node positions
@@ -73,7 +76,7 @@ function getEdgeHandles(
   }
 }
 
-function DiagramCanvasInner({ parsedDBML }: DiagramCanvasProps) {
+function DiagramCanvasInner({ parsedDBML, dbmlCode, onImport, onSave }: DiagramCanvasProps) {
   const initialNodes = useMemo(() => {
     return parsedDBML.tables.map((table, index) => ({
       id: table.name,
@@ -128,7 +131,12 @@ function DiagramCanvasInner({ parsedDBML }: DiagramCanvasProps) {
 
   return (
     <div className="canvas-panel">
-      <DiagramToolbar />
+      <DiagramToolbar 
+        dbmlCode={dbmlCode} 
+        parsedDBML={parsedDBML}
+        onImport={onImport}
+        onSave={onSave}
+      />
       
       <ReactFlow
         nodes={nodes}

@@ -46,10 +46,16 @@ function TableNode({ data }: NodeProps<TableNodeData>) {
             className="flex items-center justify-between px-4 py-2 text-sm hover:bg-muted/30 transition-colors group relative"
           >
             <Handle
+              type="source"
+              position={Position.Left}
+              id={`${column.name}-left-source`}
+              className="!-left-1 !w-2 !h-2 !bg-muted-foreground/50"
+            />
+            <Handle
               type="target"
               position={Position.Left}
               id={`${column.name}-left`}
-              className="!-left-1"
+              className="!-left-1 !w-2 !h-2 !bg-muted-foreground/50"
             />
             
             <div className="flex items-center gap-2">
@@ -77,7 +83,13 @@ function TableNode({ data }: NodeProps<TableNodeData>) {
               type="source"
               position={Position.Right}
               id={`${column.name}-right`}
-              className="!-right-1"
+              className="!-right-1 !w-2 !h-2 !bg-muted-foreground/50"
+            />
+            <Handle
+              type="target"
+              position={Position.Right}
+              id={`${column.name}-right-target`}
+              className="!-right-1 !w-2 !h-2 !bg-muted-foreground/50"
             />
           </div>
         ))}

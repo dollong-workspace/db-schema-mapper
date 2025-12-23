@@ -41,7 +41,7 @@ function getEdgeHandles(
 
   const sourceX = sourceNode.position.x;
   const targetX = targetNode.position.x;
-  const nodeWidth = 220; // Approximate node width
+  const nodeWidth = 220;
 
   // If target is to the right of source
   if (targetX > sourceX + nodeWidth / 2) {
@@ -53,8 +53,8 @@ function getEdgeHandles(
   // If target is to the left of source
   else if (targetX < sourceX - nodeWidth / 2) {
     return {
-      sourceHandle: `${rel.from.column}-left`,
-      targetHandle: `${rel.to.column}-right`,
+      sourceHandle: `${rel.from.column}-left-source`,
+      targetHandle: `${rel.to.column}-right-target`,
     };
   }
   // If they overlap horizontally, use vertical logic based on Y position
@@ -62,11 +62,11 @@ function getEdgeHandles(
     if (targetNode.position.y > sourceNode.position.y) {
       return {
         sourceHandle: `${rel.from.column}-right`,
-        targetHandle: `${rel.to.column}-right`,
+        targetHandle: `${rel.to.column}-right-target`,
       };
     } else {
       return {
-        sourceHandle: `${rel.from.column}-left`,
+        sourceHandle: `${rel.from.column}-left-source`,
         targetHandle: `${rel.to.column}-left`,
       };
     }

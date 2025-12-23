@@ -31,9 +31,9 @@ function TableNode({ data }: NodeProps<TableNodeData>) {
   const { tableName, columns, glowColor } = data;
 
   return (
-    <div className={`table-node min-w-[200px] ${glowClasses[glowColor]}`}>
+    <div className={`table-node min-w-[220px] bg-card/95 backdrop-blur-sm border border-border/50 rounded-lg shadow-table ${glowClasses[glowColor]}`}>
       {/* Table Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-secondary/50">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-secondary/30">
         <span className="font-semibold text-foreground text-sm">{tableName}</span>
         <div className={`w-2.5 h-2.5 rounded-full ${dotColors[glowColor]} animate-pulse-glow`} />
       </div>

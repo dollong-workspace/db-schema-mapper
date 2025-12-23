@@ -9,13 +9,13 @@ export interface TableNodeData {
   glowColor: 'cyan' | 'purple' | 'orange' | 'green' | 'pink' | 'blue';
 }
 
-const glowClasses = {
-  cyan: 'glow-cyan border-glow-cyan/30',
-  purple: 'glow-purple border-glow-purple/30',
-  orange: 'glow-orange border-glow-orange/30',
-  green: 'glow-green border-glow-green/30',
-  pink: 'glow-pink border-glow-pink/30',
-  blue: 'glow-blue border-glow-blue/30',
+const glowGradients = {
+  cyan: 'from-glow-cyan/20 to-transparent',
+  purple: 'from-glow-purple/20 to-transparent',
+  orange: 'from-glow-orange/20 to-transparent',
+  green: 'from-glow-green/20 to-transparent',
+  pink: 'from-glow-pink/20 to-transparent',
+  blue: 'from-glow-blue/20 to-transparent',
 };
 
 const dotColors = {
@@ -31,20 +31,27 @@ function TableNode({ data }: NodeProps<TableNodeData>) {
   const { tableName, columns, glowColor } = data;
 
   return (
-    <div className={`table-node min-w-[220px] bg-card/95 backdrop-blur-sm border border-border/50 rounded-lg shadow-table ${glowClasses[glowColor]}`}>
+    <div className="table-node min-w-[220px] bg-card/95 backdrop-blur-sm border border-border/50 rounded-lg shadow-table relative overflow-hidden">
+      {/* Corner glow effects */}
+      <div className={`absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr ${glowGradients[glowColor]} pointer-events-none`} />
+      <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl ${glowGradients[glowColor]} pointer-events-none`} />
+      
       {/* Table Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-secondary/30">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-secondary/30 relative z-10">
         <span className="font-semibold text-foreground text-sm">{tableName}</span>
         <div className={`w-2.5 h-2.5 rounded-full ${dotColors[glowColor]} animate-pulse-glow`} />
       </div>
 
       {/* Columns */}
-      <div className="divide-y divide-border/50">
-        {columns.map((column, index) => (
-          <div
-            key={column.name}
-            className="flex items-center justify-between px-4 py-2 text-sm hover:bg-muted/30 transition-colors group relative"
-          >
+      <div className="divide-y divide-border/50 relative z-10">
+        {columns.map((column, index) => {
+          const hasConnection = column.isPrimaryKey || column.isForeignKey;
+          
+          return (
+            <div
+              key={column.name}
+              className="flex items-center justify-between px-4 py-2 text-sm hover:bg-muted/30 transition-colors group relative"
+            >
             <Handle
               type="source"
               position={Position.Left}
@@ -65,7 +72,7 @@ function TableNode({ data }: NodeProps<TableNodeData>) {
               {column.isForeignKey && !column.isPrimaryKey && (
                 <Link className="w-3 h-3 text-syntax-property" />
               )}
-              <span className={`${column.isPrimaryKey ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+              <span className="text-foreground">
                 {column.name}
               </span>
               {column.isNotNull && (
@@ -73,9 +80,12 @@ function TableNode({ data }: NodeProps<TableNodeData>) {
                   NN
                 </span>
               )}
+              {hasConnection && (
+                <div className={`w-1.5 h-1.5 rounded-full ${dotColors[glowColor]}`} />
+              )}
             </div>
             
-            <span className="text-syntax-type font-mono text-xs">
+            <span className="text-muted-foreground font-mono text-xs">
               {column.type}
             </span>
 
@@ -91,8 +101,9 @@ function TableNode({ data }: NodeProps<TableNodeData>) {
               id={`${column.name}-right-target`}
               className="!-right-1 !w-2 !h-2 !bg-muted-foreground/50"
             />
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

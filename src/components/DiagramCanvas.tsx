@@ -2,7 +2,6 @@ import { useMemo, useCallback, useEffect } from 'react';
 import ReactFlow, {
   Background,
   BackgroundVariant,
-  Controls,
   Node,
   Edge,
   useNodesState,
@@ -15,7 +14,7 @@ import 'reactflow/dist/style.css';
 import TableNode, { TableNodeData } from './TableNode';
 import { DiagramToolbar } from './DiagramToolbar';
 import { ZoomControls } from './ZoomControls';
-import type { ParsedDBML, Table } from '@/lib/dbmlParser';
+import type { ParsedDBML, Relationship } from '@/lib/dbmlParser';
 
 const nodeTypes = {
   tableNode: TableNode,
@@ -27,9 +26,56 @@ interface DiagramCanvasProps {
   parsedDBML: ParsedDBML;
 }
 
+// Calculate dynamic handles based on relative node positions
+function getEdgeHandles(
+  sourceNode: Node | undefined,
+  targetNode: Node | undefined,
+  rel: Relationship
+): { sourceHandle: string; targetHandle: string } {
+  if (!sourceNode || !targetNode) {
+    return {
+      sourceHandle: `${rel.from.column}-right`,
+      targetHandle: `${rel.to.column}-left`,
+    };
+  }
+
+  const sourceX = sourceNode.position.x;
+  const targetX = targetNode.position.x;
+  const nodeWidth = 220; // Approximate node width
+
+  // If target is to the right of source
+  if (targetX > sourceX + nodeWidth / 2) {
+    return {
+      sourceHandle: `${rel.from.column}-right`,
+      targetHandle: `${rel.to.column}-left`,
+    };
+  }
+  // If target is to the left of source
+  else if (targetX < sourceX - nodeWidth / 2) {
+    return {
+      sourceHandle: `${rel.from.column}-left`,
+      targetHandle: `${rel.to.column}-right`,
+    };
+  }
+  // If they overlap horizontally, use vertical logic based on Y position
+  else {
+    if (targetNode.position.y > sourceNode.position.y) {
+      return {
+        sourceHandle: `${rel.from.column}-right`,
+        targetHandle: `${rel.to.column}-right`,
+      };
+    } else {
+      return {
+        sourceHandle: `${rel.from.column}-left`,
+        targetHandle: `${rel.to.column}-left`,
+      };
+    }
+  }
+}
+
 function DiagramCanvasInner({ parsedDBML }: DiagramCanvasProps) {
-  const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
-    const nodes: Node<TableNodeData>[] = parsedDBML.tables.map((table, index) => ({
+  const initialNodes = useMemo(() => {
+    return parsedDBML.tables.map((table, index) => ({
       id: table.name,
       type: 'tableNode',
       position: {
@@ -42,34 +88,43 @@ function DiagramCanvasInner({ parsedDBML }: DiagramCanvasProps) {
         glowColor: glowColors[index % glowColors.length],
       },
     }));
-
-    const edges: Edge[] = parsedDBML.relationships.map((rel, index) => ({
-      id: `edge-${index}`,
-      source: rel.from.table,
-      target: rel.to.table,
-      sourceHandle: `${rel.from.column}-right`,
-      targetHandle: `${rel.to.column}-left`,
-      type: 'smoothstep',
-      animated: false,
-      style: { stroke: 'hsl(var(--muted-foreground))', strokeWidth: 2 },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        color: 'hsl(var(--muted-foreground))',
-        width: 16,
-        height: 16,
-      },
-    }));
-
-    return { nodes, edges };
   }, [parsedDBML]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
+  // Update nodes when DBML changes
   useEffect(() => {
     setNodes(initialNodes);
-    setEdges(initialEdges);
-  }, [initialNodes, initialEdges, setNodes, setEdges]);
+  }, [initialNodes, setNodes]);
+
+  // Update edges dynamically based on node positions
+  useEffect(() => {
+    const newEdges: Edge[] = parsedDBML.relationships.map((rel, index) => {
+      const sourceNode = nodes.find((n) => n.id === rel.from.table);
+      const targetNode = nodes.find((n) => n.id === rel.to.table);
+      const { sourceHandle, targetHandle } = getEdgeHandles(sourceNode, targetNode, rel);
+
+      return {
+        id: `edge-${index}`,
+        source: rel.from.table,
+        target: rel.to.table,
+        sourceHandle,
+        targetHandle,
+        type: 'smoothstep',
+        animated: false,
+        style: { stroke: 'hsl(var(--muted-foreground))', strokeWidth: 2 },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: 'hsl(var(--muted-foreground))',
+          width: 16,
+          height: 16,
+        },
+      };
+    });
+
+    setEdges(newEdges);
+  }, [nodes, parsedDBML.relationships, setEdges]);
 
   return (
     <div className="canvas-panel">

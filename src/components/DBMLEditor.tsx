@@ -39,8 +39,8 @@ export function DBMLEditor({ code, onChange }: DBMLEditorProps) {
       <div className="flex-1 relative">
         <Editor
           height="100%"
-          defaultLanguage="sql"
-          theme="vs-dark"
+          defaultLanguage="dbml"
+          theme="dbml-dark"
           value={code}
           onChange={handleEditorChange}
           options={{
@@ -68,30 +68,85 @@ export function DBMLEditor({ code, onChange }: DBMLEditorProps) {
             overviewRulerBorder: false,
           }}
           beforeMount={(monaco) => {
+            // Register DBML language
+            monaco.languages.register({ id: 'dbml' });
+            
+            // Define DBML syntax highlighting
+            monaco.languages.setMonarchTokensProvider('dbml', {
+              keywords: ['Table', 'Ref', 'Enum', 'TableGroup', 'Project', 'Note'],
+              typeKeywords: ['integer', 'varchar', 'text', 'timestamp', 'boolean', 'date', 'datetime', 'float', 'decimal', 'bigint', 'serial', 'uuid'],
+              operators: ['>', '<', '-', ':'],
+              
+              tokenizer: {
+                root: [
+                  // Comments
+                  [/\/\/.*$/, 'comment'],
+                  
+                  // Strings
+                  [/'[^']*'/, 'string'],
+                  [/"[^"]*"/, 'string'],
+                  
+                  // Keywords (Table, Ref, etc.)
+                  [/\b(Table|Ref|Enum|TableGroup|Project|Note)\b/, 'keyword'],
+                  
+                  // Attributes in brackets
+                  [/\[/, 'delimiter.bracket', '@brackets'],
+                  
+                  // Type keywords
+                  [/\b(integer|varchar|text|timestamp|boolean|date|datetime|float|decimal|bigint|serial|uuid)\b/, 'type'],
+                  
+                  // Properties like primary key, not null
+                  [/\b(primary key|pk|not null|null|unique|increment|default|ref)\b/i, 'property'],
+                  
+                  // Identifiers (table names, column names)
+                  [/[a-zA-Z_]\w*/, 'identifier'],
+                  
+                  // Numbers
+                  [/\d+/, 'number'],
+                ],
+                
+                brackets: [
+                  [/\[/, 'delimiter.bracket', '@pop'],
+                  [/\]/, 'delimiter.bracket', '@pop'],
+                  [/\b(primary key|pk|not null|null|unique|increment|default|note)\b/i, 'property'],
+                  [/'[^']*'/, 'string'],
+                  [/[^\]]+/, 'property'],
+                ],
+              },
+            });
+
             monaco.editor.defineTheme('dbml-dark', {
               base: 'vs-dark',
-              inherit: true,
+              inherit: false,
               rules: [
-                { token: 'keyword', foreground: '22D3EE', fontStyle: 'bold' },
-                { token: 'string', foreground: '4ADE80' },
-                { token: 'comment', foreground: '737373', fontStyle: 'italic' },
-                { token: 'type', foreground: 'A78BFA' },
-                { token: 'identifier', foreground: 'FB923C' },
+                { token: '', foreground: 'E0E0E0' },
+                { token: 'keyword', foreground: 'C586C0', fontStyle: 'bold' }, // Pink/magenta for Table, Ref
+                { token: 'identifier', foreground: '4EC9B0' }, // Cyan/green for names
+                { token: 'type', foreground: 'DCDCAA' }, // Yellow/orange for data types
+                { token: 'comment', foreground: '6A6A6A', fontStyle: 'italic' }, // Gray for comments
+                { token: 'string', foreground: '6A9955' }, // Green for strings
+                { token: 'property', foreground: '9CDCFE' }, // Light blue for properties
+                { token: 'number', foreground: 'B5CEA8' }, // Light green for numbers
+                { token: 'delimiter.bracket', foreground: 'FFD700' }, // Gold for brackets
               ],
               colors: {
-                'editor.background': '#111111',
-                'editor.foreground': '#E5E5E5',
-                'editorLineNumber.foreground': '#525252',
-                'editorLineNumber.activeForeground': '#A3A3A3',
-                'editor.lineHighlightBackground': '#1A1A1A',
-                'editorCursor.foreground': '#22D3EE',
-                'editor.selectionBackground': '#22D3EE33',
-                'editorGutter.background': '#0D0D0D',
+                'editor.background': '#1A1A1A',
+                'editor.foreground': '#E0E0E0',
+                'editorLineNumber.foreground': '#5A5A5A',
+                'editorLineNumber.activeForeground': '#858585',
+                'editor.lineHighlightBackground': '#252525',
+                'editorCursor.foreground': '#AEAFAD',
+                'editor.selectionBackground': '#264F78',
+                'editorGutter.background': '#1A1A1A',
+                'editorIndentGuide.background': '#404040',
+                'editorIndentGuide.activeBackground': '#707070',
               },
             });
           }}
           onMount={(editor, monaco) => {
             monaco.editor.setTheme('dbml-dark');
+            // Set the language to DBML
+            monaco.editor.setModelLanguage(editor.getModel()!, 'dbml');
           }}
         />
       </div>

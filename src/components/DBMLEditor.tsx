@@ -120,27 +120,26 @@ export function DBMLEditor({ code, onChange }: DBMLEditorProps) {
               inherit: false,
               rules: [
                 { token: '', foreground: 'E0E0E0' },
-                { token: 'keyword', foreground: 'C586C0', fontStyle: 'bold' }, // Purple/magenta for Table, Ref, project
-                { token: 'identifier', foreground: '79C0FF' }, // Light blue for column names
-                { token: 'type', foreground: '4EC9B0' }, // Cyan/teal for data types (integer, varchar, timestamp)
-                { token: 'comment', foreground: '6A737D', fontStyle: 'italic' }, // Soft gray for comments
-                { token: 'string', foreground: '7EE787' }, // Green for strings
-                { token: 'property', foreground: 'FFA657' }, // Orange for attributes (primary key, not null)
-                { token: 'number', foreground: '79C0FF' }, // Light blue for numbers
-                { token: 'delimiter.bracket', foreground: 'FFA657' }, // Orange for brackets
-                { token: 'tablename', foreground: '7EE787' }, // Green for table names
+                { token: 'keyword', foreground: 'C586C0', fontStyle: 'bold' }, // Pink/magenta for Table, Ref
+                { token: 'identifier', foreground: '4EC9B0' }, // Cyan/green for names
+                { token: 'type', foreground: 'DCDCAA' }, // Yellow/orange for data types
+                { token: 'comment', foreground: '6A6A6A', fontStyle: 'italic' }, // Gray for comments
+                { token: 'string', foreground: '6A9955' }, // Green for strings
+                { token: 'property', foreground: '9CDCFE' }, // Light blue for properties
+                { token: 'number', foreground: 'B5CEA8' }, // Light green for numbers
+                { token: 'delimiter.bracket', foreground: 'FFD700' }, // Gold for brackets
               ],
               colors: {
                 'editor.background': '#1A1A1A',
                 'editor.foreground': '#E0E0E0',
-                'editorLineNumber.foreground': '#6E7681',
-                'editorLineNumber.activeForeground': '#8B949E',
-                'editor.lineHighlightBackground': '#222222',
-                'editorCursor.foreground': '#E0E0E0',
+                'editorLineNumber.foreground': '#5A5A5A',
+                'editorLineNumber.activeForeground': '#858585',
+                'editor.lineHighlightBackground': '#252525',
+                'editorCursor.foreground': '#AEAFAD',
                 'editor.selectionBackground': '#264F78',
                 'editorGutter.background': '#1A1A1A',
-                'editorIndentGuide.background': '#2D2D2D',
-                'editorIndentGuide.activeBackground': '#404040',
+                'editorIndentGuide.background': '#404040',
+                'editorIndentGuide.activeBackground': '#707070',
               },
             });
           }}

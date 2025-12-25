@@ -65,13 +65,13 @@ function TableNode({ data }: NodeProps<TableNodeData>) {
               type="source"
               position={Position.Left}
               id={`${column.name}-left-source`}
-              className="!-left-1.5 !w-3 !h-3 !bg-muted-foreground/60 hover:!bg-primary hover:!scale-125 transition-all !border-2 !border-background"
+              className="!-left-1 !w-2 !h-2 !bg-muted-foreground/50"
             />
             <Handle
               type="target"
               position={Position.Left}
               id={`${column.name}-left`}
-              className="!-left-1.5 !w-3 !h-3 !bg-muted-foreground/60 hover:!bg-primary hover:!scale-125 transition-all !border-2 !border-background"
+              className="!-left-1 !w-2 !h-2 !bg-muted-foreground/50"
             />
             
             <div className="flex items-center gap-2">
@@ -102,13 +102,13 @@ function TableNode({ data }: NodeProps<TableNodeData>) {
               type="source"
               position={Position.Right}
               id={`${column.name}-right`}
-              className="!-right-1.5 !w-3 !h-3 !bg-muted-foreground/60 hover:!bg-primary hover:!scale-125 transition-all !border-2 !border-background"
+              className="!-right-1 !w-2 !h-2 !bg-muted-foreground/50"
             />
             <Handle
               type="target"
               position={Position.Right}
               id={`${column.name}-right-target`}
-              className="!-right-1.5 !w-3 !h-3 !bg-muted-foreground/60 hover:!bg-primary hover:!scale-125 transition-all !border-2 !border-background"
+              className="!-right-1 !w-2 !h-2 !bg-muted-foreground/50"
             />
             </div>
           );

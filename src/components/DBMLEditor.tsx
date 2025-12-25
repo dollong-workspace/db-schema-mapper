@@ -163,6 +163,11 @@ export function DBMLEditor({ code, onChange }: DBMLEditorProps) {
             monaco.editor.setTheme('dbml-dark');
             // Set the language to DBML
             monaco.editor.setModelLanguage(editor.getModel()!, 'dbml');
+            
+            // Fix spacebar issue - prevent parent elements from capturing keyboard events
+            editor.onKeyDown((e) => {
+              e.stopPropagation();
+            });
           }}
         />
       </div>

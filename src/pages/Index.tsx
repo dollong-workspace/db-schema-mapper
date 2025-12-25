@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { DBMLEditor } from '@/components/DBMLEditor';
 import { DiagramCanvas } from '@/components/DiagramCanvas';
 import { parseDBML, DEFAULT_DBML } from '@/lib/dbmlParser';
@@ -27,18 +28,26 @@ const Index = () => {
   };
 
   return (
-    <div className="h-full flex">
-      <div className="w-[40%] min-w-[350px] border-r border-border">
-        <DBMLEditor code={dbmlCode} onChange={setDbmlCode} />
-      </div>
-      <div className="flex-1">
-        <DiagramCanvas 
-          parsedDBML={parsedDBML} 
-          dbmlCode={dbmlCode}
-          onImport={handleImport}
-          onSave={forceSave}
-        />
-      </div>
+    <div className="h-full">
+      <ResizablePanelGroup direction="horizontal" className="h-full">
+        <ResizablePanel 
+          defaultSize={30} 
+          minSize={20} 
+          maxSize={40}
+          className="border-r border-border"
+        >
+          <DBMLEditor code={dbmlCode} onChange={setDbmlCode} />
+        </ResizablePanel>
+        <ResizableHandle withHandle className="bg-border hover:bg-primary/50 transition-colors" />
+        <ResizablePanel defaultSize={70} minSize={60}>
+          <DiagramCanvas 
+            parsedDBML={parsedDBML} 
+            dbmlCode={dbmlCode}
+            onImport={handleImport}
+            onSave={forceSave}
+          />
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };

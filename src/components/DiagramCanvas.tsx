@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useEffect } from 'react';
+import { useMemo, useCallback, useEffect, useState } from 'react';
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -11,6 +11,7 @@ import ReactFlow, {
   Connection,
   addEdge,
   OnConnect,
+  EdgeMouseHandler,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -49,22 +50,17 @@ function getEdgeHandles(
   const targetX = targetNode.position.x;
   const nodeWidth = 220;
 
-  // If target is to the right of source
   if (targetX > sourceX + nodeWidth / 2) {
     return {
       sourceHandle: `${rel.from.column}-right`,
       targetHandle: `${rel.to.column}-left`,
     };
-  }
-  // If target is to the left of source
-  else if (targetX < sourceX - nodeWidth / 2) {
+  } else if (targetX < sourceX - nodeWidth / 2) {
     return {
       sourceHandle: `${rel.from.column}-left-source`,
       targetHandle: `${rel.to.column}-right-target`,
     };
-  }
-  // If they overlap horizontally, use vertical logic based on Y position
-  else {
+  } else {
     if (targetNode.position.y > sourceNode.position.y) {
       return {
         sourceHandle: `${rel.from.column}-right`,
@@ -79,15 +75,9 @@ function getEdgeHandles(
   }
 }
 
-// Create edge style helper
-function createEdgeStyle(selected: boolean = false) {
-  return {
-    stroke: selected ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-    strokeWidth: selected ? 3 : 2,
-  };
-}
-
 function DiagramCanvasInner({ parsedDBML, dbmlCode, onImport, onSave }: DiagramCanvasProps) {
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+
   const initialNodes = useMemo(() => {
     return parsedDBML.tables.map((table, index) => ({
       id: table.name,
@@ -112,82 +102,115 @@ function DiagramCanvasInner({ parsedDBML, dbmlCode, onImport, onSave }: DiagramC
     setNodes(initialNodes);
   }, [initialNodes, setNodes]);
 
-  // Update edges dynamically based on node positions
+  // Create edge with selection state
+  const createEdge = useCallback(
+    (
+      id: string,
+      source: string,
+      target: string,
+      sourceHandle: string | null,
+      targetHandle: string | null,
+      isSelected: boolean
+    ): Edge => ({
+      id,
+      source,
+      target,
+      sourceHandle,
+      targetHandle,
+      type: 'smoothstep',
+      animated: false,
+      selected: isSelected,
+      style: {
+        stroke: isSelected ? 'hsl(210, 100%, 60%)' : 'hsl(var(--muted-foreground))',
+        strokeWidth: isSelected ? 3 : 2,
+        filter: isSelected ? 'drop-shadow(0 0 4px hsl(210, 100%, 60%))' : 'none',
+      },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color: isSelected ? 'hsl(210, 100%, 60%)' : 'hsl(var(--muted-foreground))',
+        width: 16,
+        height: 16,
+      },
+    }),
+    []
+  );
+
+  // Update edges dynamically based on node positions and selection
   useEffect(() => {
-    const newEdges: Edge[] = parsedDBML.relationships.map((rel, index) => {
+    const newEdges: Edge[] = parsedDBML.relationships.map((rel) => {
       const sourceNode = nodes.find((n) => n.id === rel.from.table);
       const targetNode = nodes.find((n) => n.id === rel.to.table);
       const { sourceHandle, targetHandle } = getEdgeHandles(sourceNode, targetNode, rel);
+      const edgeId = `edge-${rel.from.table}-${rel.from.column}-${rel.to.table}-${rel.to.column}`;
 
-      return {
-        id: `edge-${rel.from.table}-${rel.from.column}-${rel.to.table}-${rel.to.column}`,
-        source: rel.from.table,
-        target: rel.to.table,
-        sourceHandle,
-        targetHandle,
-        type: 'smoothstep',
-        animated: false,
-        style: createEdgeStyle(false),
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          color: 'hsl(var(--muted-foreground))',
-          width: 16,
-          height: 16,
-        },
-      };
+      return createEdge(edgeId, rel.from.table, rel.to.table, sourceHandle, targetHandle, selectedEdgeId === edgeId);
     });
 
     setEdges((currentEdges) => {
-      // Keep manually created edges that don't exist in DBML
       const dbmlEdgeIds = new Set(newEdges.map((e) => e.id));
-      const manualEdges = currentEdges.filter(
-        (e) => e.id.startsWith('manual-') || !dbmlEdgeIds.has(e.id)
-      );
-      
-      // Merge DBML edges with manual edges
+      const manualEdges = currentEdges
+        .filter((e) => e.id.startsWith('manual-'))
+        .map((e) => ({
+          ...e,
+          selected: selectedEdgeId === e.id,
+          style: {
+            stroke: selectedEdgeId === e.id ? 'hsl(210, 100%, 60%)' : 'hsl(var(--muted-foreground))',
+            strokeWidth: selectedEdgeId === e.id ? 3 : 2,
+            filter: selectedEdgeId === e.id ? 'drop-shadow(0 0 4px hsl(210, 100%, 60%))' : 'none',
+          },
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: selectedEdgeId === e.id ? 'hsl(210, 100%, 60%)' : 'hsl(var(--muted-foreground))',
+            width: 16,
+            height: 16,
+          },
+        }));
+
       const mergedEdges = [...newEdges];
       manualEdges.forEach((manualEdge) => {
         if (!mergedEdges.some((e) => e.id === manualEdge.id)) {
           mergedEdges.push(manualEdge);
         }
       });
-      
+
       return mergedEdges;
     });
-  }, [nodes, parsedDBML.relationships, setEdges]);
+  }, [nodes, parsedDBML.relationships, setEdges, selectedEdgeId, createEdge]);
 
   // Handle new connection from drag
   const onConnect: OnConnect = useCallback(
     (connection: Connection) => {
       if (!connection.source || !connection.target) return;
-      
-      const newEdge: Edge = {
-        id: `manual-${connection.source}-${connection.sourceHandle}-${connection.target}-${connection.targetHandle}`,
-        source: connection.source,
-        target: connection.target,
-        sourceHandle: connection.sourceHandle,
-        targetHandle: connection.targetHandle,
-        type: 'smoothstep',
-        animated: false,
-        style: createEdgeStyle(false),
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          color: 'hsl(var(--muted-foreground))',
-          width: 16,
-          height: 16,
-        },
-      };
-      
+
+      const newEdge = createEdge(
+        `manual-${connection.source}-${connection.sourceHandle}-${connection.target}-${connection.targetHandle}`,
+        connection.source,
+        connection.target,
+        connection.sourceHandle,
+        connection.targetHandle,
+        false
+      );
+
       setEdges((eds) => addEdge(newEdge, eds));
     },
-    [setEdges]
+    [setEdges, createEdge]
   );
+
+  // Handle edge click for selection
+  const onEdgeClick: EdgeMouseHandler = useCallback((event, edge) => {
+    event.stopPropagation();
+    setSelectedEdgeId((prev) => (prev === edge.id ? null : edge.id));
+  }, []);
+
+  // Handle pane click to deselect
+  const onPaneClick = useCallback(() => {
+    setSelectedEdgeId(null);
+  }, []);
 
   // Handle keyboard delete for selected edges
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Backspace' || event.key === 'Delete') {
-        // Don't delete if focus is in an input/editor
         const activeElement = document.activeElement;
         if (
           activeElement?.tagName === 'INPUT' ||
@@ -196,43 +219,42 @@ function DiagramCanvasInner({ parsedDBML, dbmlCode, onImport, onSave }: DiagramC
         ) {
           return;
         }
-        
-        setEdges((eds) => eds.filter((edge) => !edge.selected));
+
+        if (selectedEdgeId) {
+          setEdges((eds) => eds.filter((edge) => edge.id !== selectedEdgeId));
+          setSelectedEdgeId(null);
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setEdges]);
+  }, [setEdges, selectedEdgeId]);
 
   return (
     <div className="canvas-panel">
-      <DiagramToolbar 
-        dbmlCode={dbmlCode} 
-        parsedDBML={parsedDBML}
-        onImport={onImport}
-        onSave={onSave}
-      />
-      
+      <DiagramToolbar dbmlCode={dbmlCode} parsedDBML={parsedDBML} onImport={onImport} onSave={onSave} />
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onEdgeClick={onEdgeClick}
+        onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.1}
         maxZoom={2}
-        deleteKeyCode={['Backspace', 'Delete']}
         edgesUpdatable
         edgesFocusable
         selectNodesOnDrag={false}
         defaultEdgeOptions={{
           type: 'smoothstep',
           animated: false,
-          style: createEdgeStyle(false),
+          style: { stroke: 'hsl(var(--muted-foreground))', strokeWidth: 2 },
           markerEnd: {
             type: MarkerType.ArrowClosed,
             color: 'hsl(var(--muted-foreground))',
@@ -245,12 +267,7 @@ function DiagramCanvasInner({ parsedDBML, dbmlCode, onImport, onSave }: DiagramC
           strokeWidth: 2,
         }}
       >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={20}
-          size={1}
-          color="hsl(var(--canvas-grid))"
-        />
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="hsl(var(--canvas-grid))" />
         <ZoomControls />
       </ReactFlow>
     </div>

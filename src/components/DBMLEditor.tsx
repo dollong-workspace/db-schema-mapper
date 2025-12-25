@@ -164,9 +164,23 @@ export function DBMLEditor({ code, onChange }: DBMLEditorProps) {
             // Set the language to DBML
             monaco.editor.setModelLanguage(editor.getModel()!, 'dbml');
             
-            // Fix spacebar issue - prevent parent elements from capturing keyboard events
+            // Prevent parent elements (React Flow) from capturing keyboard events
+            // This ensures arrow keys, backspace, delete, space all work correctly
+            const editorDom = editor.getDomNode();
+            if (editorDom) {
+              editorDom.addEventListener('keydown', (e) => {
+                e.stopPropagation();
+              }, true);
+            }
+            
+            // Also handle through Monaco's event system for extra safety
             editor.onKeyDown((e) => {
               e.stopPropagation();
+            });
+            
+            // Ensure editor maintains focus when clicked
+            editor.onDidFocusEditorText(() => {
+              editor.focus();
             });
           }}
         />

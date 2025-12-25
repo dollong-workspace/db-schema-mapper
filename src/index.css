@@ -51,7 +51,7 @@
 
     /* Canvas colors */
     --canvas-bg: 0 0% 11%;
-    --canvas-grid: 0 0% 15%;
+    --canvas-grid: 240 3% 13%;
 
     /* Syntax highlighting */
     --syntax-keyword: 174 72% 55%;
@@ -110,55 +110,45 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
 
-  html, body, #root {
+  html,
+  body,
+  #root {
     @apply h-full overflow-hidden;
   }
 }
 
 @layer components {
   .glow-cyan {
-    box-shadow: 
-      0 0 20px hsl(var(--glow-cyan) / 0.15),
-      0 0 40px hsl(var(--glow-cyan) / 0.1),
+    box-shadow: 0 0 20px hsl(var(--glow-cyan) / 0.15), 0 0 40px hsl(var(--glow-cyan) / 0.1),
       inset 0 1px 0 hsl(var(--glow-cyan) / 0.1);
   }
 
   .glow-purple {
-    box-shadow: 
-      0 0 20px hsl(var(--glow-purple) / 0.2),
-      0 0 40px hsl(var(--glow-purple) / 0.1),
+    box-shadow: 0 0 20px hsl(var(--glow-purple) / 0.2), 0 0 40px hsl(var(--glow-purple) / 0.1),
       inset 0 1px 0 hsl(var(--glow-purple) / 0.1);
   }
 
   .glow-orange {
-    box-shadow: 
-      0 0 20px hsl(var(--glow-orange) / 0.2),
-      0 0 40px hsl(var(--glow-orange) / 0.1),
+    box-shadow: 0 0 20px hsl(var(--glow-orange) / 0.2), 0 0 40px hsl(var(--glow-orange) / 0.1),
       inset 0 1px 0 hsl(var(--glow-orange) / 0.1);
   }
 
   .glow-green {
-    box-shadow: 
-      0 0 20px hsl(var(--glow-green) / 0.2),
-      0 0 40px hsl(var(--glow-green) / 0.1),
+    box-shadow: 0 0 20px hsl(var(--glow-green) / 0.2), 0 0 40px hsl(var(--glow-green) / 0.1),
       inset 0 1px 0 hsl(var(--glow-green) / 0.1);
   }
 
   .glow-pink {
-    box-shadow: 
-      0 0 20px hsl(var(--glow-pink) / 0.2),
-      0 0 40px hsl(var(--glow-pink) / 0.1),
+    box-shadow: 0 0 20px hsl(var(--glow-pink) / 0.2), 0 0 40px hsl(var(--glow-pink) / 0.1),
       inset 0 1px 0 hsl(var(--glow-pink) / 0.1);
   }
 
   .glow-blue {
-    box-shadow: 
-      0 0 20px hsl(var(--glow-blue) / 0.2),
-      0 0 40px hsl(var(--glow-blue) / 0.1),
+    box-shadow: 0 0 20px hsl(var(--glow-blue) / 0.2), 0 0 40px hsl(var(--glow-blue) / 0.1),
       inset 0 1px 0 hsl(var(--glow-blue) / 0.1);
   }
 
-.table-node {
+  .table-node {
     @apply overflow-hidden transition-all duration-200;
     box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.2);
   }

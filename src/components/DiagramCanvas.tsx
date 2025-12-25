@@ -8,6 +8,9 @@ import ReactFlow, {
   useEdgesState,
   MarkerType,
   ReactFlowProvider,
+  Connection,
+  addEdge,
+  OnConnect,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -76,6 +79,14 @@ function getEdgeHandles(
   }
 }
 
+// Create edge style helper
+function createEdgeStyle(selected: boolean = false) {
+  return {
+    stroke: selected ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+    strokeWidth: selected ? 3 : 2,
+  };
+}
+
 function DiagramCanvasInner({ parsedDBML, dbmlCode, onImport, onSave }: DiagramCanvasProps) {
   const initialNodes = useMemo(() => {
     return parsedDBML.tables.map((table, index) => ({
@@ -109,14 +120,14 @@ function DiagramCanvasInner({ parsedDBML, dbmlCode, onImport, onSave }: DiagramC
       const { sourceHandle, targetHandle } = getEdgeHandles(sourceNode, targetNode, rel);
 
       return {
-        id: `edge-${index}`,
+        id: `edge-${rel.from.table}-${rel.from.column}-${rel.to.table}-${rel.to.column}`,
         source: rel.from.table,
         target: rel.to.table,
         sourceHandle,
         targetHandle,
         type: 'smoothstep',
         animated: false,
-        style: { stroke: 'hsl(var(--muted-foreground))', strokeWidth: 2 },
+        style: createEdgeStyle(false),
         markerEnd: {
           type: MarkerType.ArrowClosed,
           color: 'hsl(var(--muted-foreground))',
@@ -126,8 +137,73 @@ function DiagramCanvasInner({ parsedDBML, dbmlCode, onImport, onSave }: DiagramC
       };
     });
 
-    setEdges(newEdges);
+    setEdges((currentEdges) => {
+      // Keep manually created edges that don't exist in DBML
+      const dbmlEdgeIds = new Set(newEdges.map((e) => e.id));
+      const manualEdges = currentEdges.filter(
+        (e) => e.id.startsWith('manual-') || !dbmlEdgeIds.has(e.id)
+      );
+      
+      // Merge DBML edges with manual edges
+      const mergedEdges = [...newEdges];
+      manualEdges.forEach((manualEdge) => {
+        if (!mergedEdges.some((e) => e.id === manualEdge.id)) {
+          mergedEdges.push(manualEdge);
+        }
+      });
+      
+      return mergedEdges;
+    });
   }, [nodes, parsedDBML.relationships, setEdges]);
+
+  // Handle new connection from drag
+  const onConnect: OnConnect = useCallback(
+    (connection: Connection) => {
+      if (!connection.source || !connection.target) return;
+      
+      const newEdge: Edge = {
+        id: `manual-${connection.source}-${connection.sourceHandle}-${connection.target}-${connection.targetHandle}`,
+        source: connection.source,
+        target: connection.target,
+        sourceHandle: connection.sourceHandle,
+        targetHandle: connection.targetHandle,
+        type: 'smoothstep',
+        animated: false,
+        style: createEdgeStyle(false),
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: 'hsl(var(--muted-foreground))',
+          width: 16,
+          height: 16,
+        },
+      };
+      
+      setEdges((eds) => addEdge(newEdge, eds));
+    },
+    [setEdges]
+  );
+
+  // Handle keyboard delete for selected edges
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Backspace' || event.key === 'Delete') {
+        // Don't delete if focus is in an input/editor
+        const activeElement = document.activeElement;
+        if (
+          activeElement?.tagName === 'INPUT' ||
+          activeElement?.tagName === 'TEXTAREA' ||
+          activeElement?.closest('.monaco-editor')
+        ) {
+          return;
+        }
+        
+        setEdges((eds) => eds.filter((edge) => !edge.selected));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setEdges]);
 
   return (
     <div className="canvas-panel">
@@ -143,14 +219,30 @@ function DiagramCanvasInner({ parsedDBML, dbmlCode, onImport, onSave }: DiagramC
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.1}
         maxZoom={2}
+        deleteKeyCode={['Backspace', 'Delete']}
+        edgesUpdatable
+        edgesFocusable
+        selectNodesOnDrag={false}
         defaultEdgeOptions={{
           type: 'smoothstep',
           animated: false,
+          style: createEdgeStyle(false),
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: 'hsl(var(--muted-foreground))',
+            width: 16,
+            height: 16,
+          },
+        }}
+        connectionLineStyle={{
+          stroke: 'hsl(var(--primary))',
+          strokeWidth: 2,
         }}
       >
         <Background

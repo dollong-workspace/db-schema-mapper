@@ -148,6 +148,14 @@ function DiagramCanvasInner({ parsedDBML, dbmlCode, onImport, onSave }: DiagramC
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.1}
         maxZoom={2}
+        // Important: don't let React Flow global keyboard handlers interfere with Monaco
+        // (space, arrows, backspace/delete should behave like VSCode inside the editor)
+        deleteKeyCode={null}
+        selectionKeyCode={null}
+        multiSelectionKeyCode={null}
+        panActivationKeyCode={null}
+        zoomActivationKeyCode={null}
+        disableKeyboardA11y
         defaultEdgeOptions={{
           type: 'smoothstep',
           animated: false,

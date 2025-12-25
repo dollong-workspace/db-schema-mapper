@@ -28,7 +28,7 @@ export function DBMLEditor({ code, onChange }: DBMLEditorProps) {
             <span className="font-semibold text-foreground">SchemaCraft</span>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-md">
           <Cloud className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">Untitled Diagram</span>
@@ -70,41 +70,57 @@ export function DBMLEditor({ code, onChange }: DBMLEditorProps) {
           beforeMount={(monaco) => {
             // Register DBML language
             monaco.languages.register({ id: 'dbml' });
-            
+
             // Define DBML syntax highlighting
             monaco.languages.setMonarchTokensProvider('dbml', {
               keywords: ['Table', 'Ref', 'Enum', 'TableGroup', 'Project', 'Note'],
-              typeKeywords: ['integer', 'varchar', 'text', 'timestamp', 'boolean', 'date', 'datetime', 'float', 'decimal', 'bigint', 'serial', 'uuid'],
+              typeKeywords: [
+                'integer',
+                'varchar',
+                'text',
+                'timestamp',
+                'boolean',
+                'date',
+                'datetime',
+                'float',
+                'decimal',
+                'bigint',
+                'serial',
+                'uuid',
+              ],
               operators: ['>', '<', '-', ':'],
-              
+
               tokenizer: {
                 root: [
                   // Comments
                   [/\/\/.*$/, 'comment'],
-                  
+
                   // Strings
                   [/'[^']*'/, 'string'],
                   [/"[^"]*"/, 'string'],
-                  
+
                   // Keywords (Table, Ref, etc.)
                   [/\b(Table|Ref|Enum|TableGroup|Project|Note)\b/, 'keyword'],
-                  
+
                   // Attributes in brackets
                   [/\[/, 'delimiter.bracket', '@brackets'],
-                  
+
                   // Type keywords
-                  [/\b(integer|varchar|text|timestamp|boolean|date|datetime|float|decimal|bigint|serial|uuid)\b/, 'type'],
-                  
+                  [
+                    /\b(integer|varchar|text|timestamp|boolean|date|datetime|float|decimal|bigint|serial|uuid)\b/,
+                    'type',
+                  ],
+
                   // Properties like primary key, not null
                   [/\b(primary key|pk|not null|null|unique|increment|default|ref)\b/i, 'property'],
-                  
+
                   // Identifiers (table names, column names)
                   [/[a-zA-Z_]\w*/, 'identifier'],
-                  
+
                   // Numbers
                   [/\d+/, 'number'],
                 ],
-                
+
                 brackets: [
                   [/\[/, 'delimiter.bracket', '@pop'],
                   [/\]/, 'delimiter.bracket', '@pop'],
@@ -121,23 +137,23 @@ export function DBMLEditor({ code, onChange }: DBMLEditorProps) {
               rules: [
                 { token: '', foreground: 'E0E0E0' },
                 { token: 'keyword', foreground: 'C586C0', fontStyle: 'bold' }, // Pink/magenta for Table, Ref
-                { token: 'identifier', foreground: '4EC9B0' }, // Cyan/green for names
-                { token: 'type', foreground: 'DCDCAA' }, // Yellow/orange for data types
+                { token: 'identifier', foreground: '9ad9fb' }, // Cyan/green for names
+                { token: 'type', foreground: '4bbfa8' }, // Yellow/orange for data types
                 { token: 'comment', foreground: '6A6A6A', fontStyle: 'italic' }, // Gray for comments
                 { token: 'string', foreground: '6A9955' }, // Green for strings
-                { token: 'property', foreground: '9CDCFE' }, // Light blue for properties
+                { token: 'property', foreground: 'C586C0' }, // Light blue for properties
                 { token: 'number', foreground: 'B5CEA8' }, // Light green for numbers
                 { token: 'delimiter.bracket', foreground: 'FFD700' }, // Gold for brackets
               ],
               colors: {
-                'editor.background': '#1A1A1A',
+                'editor.background': '#1e1e1e',
                 'editor.foreground': '#E0E0E0',
                 'editorLineNumber.foreground': '#5A5A5A',
                 'editorLineNumber.activeForeground': '#858585',
                 'editor.lineHighlightBackground': '#252525',
                 'editorCursor.foreground': '#AEAFAD',
                 'editor.selectionBackground': '#264F78',
-                'editorGutter.background': '#1A1A1A',
+                'editorGutter.background': '#1e1e1e',
                 'editorIndentGuide.background': '#404040',
                 'editorIndentGuide.activeBackground': '#707070',
               },
@@ -156,11 +172,10 @@ export function DBMLEditor({ code, onChange }: DBMLEditorProps) {
         <div className="relative border-t border-border bg-gradient-to-r from-muted/50 to-muted/30 px-4 py-3">
           <button
             onClick={() => setShowBanner(false)}
-            className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground transition-colors"
-          >
+            className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground transition-colors">
             <X className="w-4 h-4" />
           </button>
-          
+
           <div className="flex items-start gap-3 pr-6">
             <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
               <Flame className="w-4 h-4 text-primary" />

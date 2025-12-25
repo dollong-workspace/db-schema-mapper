@@ -39,7 +39,7 @@ export function ShareModal({ open, onOpenChange, dbmlCode }: ShareModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border sm:max-w-md">
+      <DialogContent className="bg-card border-border sm:max-w-md overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-foreground flex items-center gap-2">
             <Share2 className="w-5 h-5 text-primary" />
@@ -50,7 +50,7 @@ export function ShareModal({ open, onOpenChange, dbmlCode }: ShareModalProps) {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4 overflow-hidden">
           {/* Public Link */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
@@ -61,11 +61,12 @@ export function ShareModal({ open, onOpenChange, dbmlCode }: ShareModalProps) {
               <Input 
                 value={shareableLink} 
                 readOnly 
-                className="bg-background text-sm font-mono"
+                className="bg-background text-sm font-mono truncate min-w-0"
               />
               <Button
                 variant="outline"
                 size="icon"
+                className="shrink-0"
                 onClick={() => handleCopy(shareableLink, 'link')}
               >
                 {copied === 'link' ? (
@@ -87,7 +88,7 @@ export function ShareModal({ open, onOpenChange, dbmlCode }: ShareModalProps) {
               Embed Code
             </Label>
             <div className="relative">
-              <pre className="p-3 bg-background rounded-lg text-xs font-mono overflow-x-auto border border-border">
+              <pre className="p-3 bg-background rounded-lg text-xs font-mono overflow-x-auto border border-border whitespace-pre-wrap break-all max-h-32">
                 {embedCode}
               </pre>
               <Button

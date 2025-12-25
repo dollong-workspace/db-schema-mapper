@@ -2,6 +2,8 @@
 
 **Design Databases at the Speed of Thought.**
 
+![schema craft cover](/public/assests/demo/image.png)
+
 ### 🛑 The Problem: Database Design is Broken
 
 Designing databases usually forces you into one of two crappy options:
